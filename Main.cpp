@@ -9,8 +9,9 @@ using namespace std;
 void strToLower(char* a);
 void addNode(Node* head, int number);
 void printTree(Node* head, int level);
-Node* nodeSearch (Node* head, int number);
-bool deleteNode (Node* &head, int number, Node* parent);
+Node* nodeSearch (Node* head, int number, Node* &parent, bool &right);
+bool deleteNode(Node* &head, int number);
+
 int main(){
   
   Node* head = NULL;
@@ -43,8 +44,10 @@ int main(){
       if (head){
 	cout << "What number are you looking for?" << endl;
 	int number;
+	Node* parent;
+	bool right;
 	cin >> number;
-	if (nodeSearch(head,number)){
+	if (nodeSearch(head,number,parent,right)){
 	  cout << number << " is in the tree" << endl;
 	}
 	else{
@@ -59,8 +62,13 @@ int main(){
       if (head){
         cout << "What number are you looking for?" << endl;
         int number;
-        cin >> number;
-        deleteNode(head,number,NULL);
+	cin >> number;
+	if (deleteNode(head,number)){
+	  cout << number << " Has been deleted" << endl;
+        }
+        else{
+          cout << number << " is not in the tree" << endl;
+        }
       }
       else{
         cout << "You cant delete a node from an empty tree!" << endl;
@@ -111,35 +119,64 @@ void printTree(Node* head, int level){
     printTree(head->getLeft(), level);
   } 
 }
-Node* nodeSearch(Node* head, int number){
+Node* nodeSearch(Node* head, int number, Node* &parent, bool &right){
   if (number < head->getData()){
     if(head->getLeft()){
-      return nodeSearch(head->getLeft(), number);
+      right = false;
+      parent = head;
+      return nodeSearch(head->getLeft(), number, parent,right);
     }
     else return NULL;
   }
   else if (number > head->getData()){
     if(head->getRight()){
-      return nodeSearch(head->getRight(), number);
+      right = true;
+      parent = head;
+      return nodeSearch(head->getRight(), number,parent,right);
     }
     else return NULL;
   }
   else return head;
 }
-bool deleteNode(Node** head, int number, Node* parent){
-  if (number < (*head)->getData()){
-    if((*head)->getLeft()){
-      return deleteNode(((*head)->getLeft()), number, head);
-    }
-    else return false;
+bool deleteNode(Node* &head, int number){
+  Node* parent;
+  Node* dNode;
+  bool right;
+  Node* toSwap = NULL;
+  dNode = nodeSearch(head,number,parent,right);
+  if (!dNode){
+    return false;
   }
-  else if (number > (*head)->getData()){
-    if((*head)->getRight()){
-      return deleteNode((*head)->getRight(), number,head);
-    }
-    else return false;
+  if (!dNode->getLeft() && !dNode->getRight()){
+    toSwap = NULL;
+  }
+  else if(!dNode->getRight()){
+    toSwap = dNode->getLeft();
+  }
+  else if(!dNode->getLeft()){
+    toSwap = dNode->getRight();
+  }
+  else if(!dNode->getLeft()->getRight()){
+    Node* current = dNode->getLeft();
+    current->setRight(dNode->getRight());
+    toSwap = current;
   }
   else{
-    
+    Node* leftRoot = dNode->getLeft();
+    Node* current = dNode->getLeft()->getRight();
+    Node* currentParent = leftRoot;
+    while(current->getRight()){
+      currentParent = current;
+      current = current->getRight();
+    }
+    currentParent->setRight(NULL);
+    current->setLeft(leftRoot);
+    current->setRight(dNode->getRight());
+    toSwap = current; 
+  
   }
+  if(head == dNode) head = toSwap;
+  else if(right) parent->setRight(toSwap);
+  else parent->setLeft(toSwap);
+  return true;
 }
