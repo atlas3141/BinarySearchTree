@@ -19,6 +19,8 @@ void Node::setRight(Node* node){
   right = node;
 }
 Node::Node(int number){
+  left = NULL;
+  right = NULL;
   data = number;
 }
 Node::Node(){
