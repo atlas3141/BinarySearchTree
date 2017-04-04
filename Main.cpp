@@ -1,16 +1,62 @@
 //Josh Howell Binary Search Tree
 //Basic Search tree for integers
+
 #include <iostream>
 #include <cstring>
+#include <fstream>
 #include "Node.h"
+
 
 using namespace std;
 
 void strToLower(char* a);
-void addNode(Node* head, int number);
-void printTree(Node* head, int level);
-Node* nodeSearch (Node* head, int number, Node* &parent, bool &right);
-bool deleteNode(Node* &head, int number);
+void addNode(Node* head, int number, Node* &treeHead); // Adds A number to the tree
+void printTree(Node* head, int level); //prints the tree
+Node* nodeSearch (Node* head, int number, Node* &parent, bool &right); //tells you if a value is in the tree andr returns the node
+bool deleteNode(Node* &head, int number); //Deletes the node
+
+void configureInput(ifstream &stream, bool &isFile){
+  //Asks weather to take in input from text or from file
+  //outputs through ifstream parameter
+  
+  char input[128];
+  isFile = false;
+  
+  cout << "Read from File or Input text?" << endl;
+  cin.getline(input,128);
+  strToLower(input);
+  
+  if(input[0] == 'f'){
+    cout << "What file?" << endl;
+    cin.getline(input,128);
+    stream.open(input);
+    if(stream.is_open()){
+      isFile = true;
+    }
+    else{
+      cout << "Could not open file" << endl;
+      cout << "Enter by command line" << endl;
+    }
+  }
+  else{
+    cout << "Enter by command line" << endl;
+  }
+}
+void addNumbers(istream &from, Node* &head){
+  //goes through a stream and adds them to the tree
+  int newInput;
+  from >> newInput;
+  addNode(head,newInput,head);
+  while(from.peek() != '\n' && !from.eof()){
+    if(isdigit(from.peek())){
+      from >> newInput;
+      addNode(head,newInput,head);
+    }
+    else{
+      from.ignore();
+    }
+  }
+}
 
 int main(){
   
@@ -19,19 +65,15 @@ int main(){
   char input[30];
 
   while (running == true){
-    cin.get(input,30);
+    cin.getline(input,30);
     strToLower(input);
     if (!strcmp(input,"add")){
-      if (head == NULL){
-	head = new Node();
-      }
-      else{
-	cout << "Data for New Node?" << endl;
-	int number;
-	cin >> number;
-	addNode(head,number);
-	  
-      }
+      ifstream stream;
+      bool isFile;
+      configureInput(stream, isFile);
+      addNumbers(isFile ? stream : cin, head);
+      if(isFile) stream.close();
+      cin.ignore();
     }
     else if (!strcmp(input,"print")){
       if(head){
@@ -76,9 +118,8 @@ int main(){
     }	   
     else{
       cout << "I dont know what you mean" << endl;
-      cin.clear();
+     
     }
-    cin.ignore();
   }
 } 
 
@@ -88,18 +129,21 @@ void strToLower(char* a){ //converts words to lower
     a++;
   }
 }
-void addNode(Node* head, int number){
-  if (number < head->getData()){
+void addNode(Node* head, int number, Node* &treeHead){
+  if (treeHead == NULL){
+    treeHead = new Node(number);
+  }
+  else if (number < head->getData()){
     if (head->getLeft()){
-      addNode(head->getLeft(),number);
+      addNode(head->getLeft(),number,treeHead);
     }
     else{
       head->setLeft(new Node(number));
     }
   }
-  if (number > head->getData()){
+  else if (number > head->getData()){
     if (head->getRight()){
-      addNode(head->getRight(),number);
+      addNode(head->getRight(),number,treeHead);
     }
     else{
       head->setRight(new Node(number));
