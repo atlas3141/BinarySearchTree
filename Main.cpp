@@ -213,7 +213,7 @@ bool deleteNode(Node* &head, int number){
       currentParent = current;
       current = current->getRight();
     }
-    currentParent->setRight(NULL);
+    currentParent->setRight(current->getLeft());
     current->setLeft(leftRoot);
     current->setRight(dNode->getRight());
     toSwap = current; 
